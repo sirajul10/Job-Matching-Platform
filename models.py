@@ -1,13 +1,14 @@
 
 from database import Base
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Numeric, Date, Text,UniqueConstraint,Float
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Numeric, Date, Text, UniqueConstraint, Float, Index
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.sql import func
 
 
 class Users(Base):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, index=True)
     email = Column(String(255), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
     role = Column(String(20), default="candidate", nullable=False)  # candidate / employer / admin
@@ -20,7 +21,7 @@ class Users(Base):
 class CandidateProfile(Base):
     __tablename__ = "candidate_profiles"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True,index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False)
     full_name = Column(String(150), nullable=False)
     phone = Column(String(20), nullable=True)
@@ -37,7 +38,7 @@ class CandidateProfile(Base):
 class Education(Base):
     __tablename__ = "education"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True,index=True)
     candidate_id = Column(Integer, ForeignKey("candidate_profiles.id", ondelete="CASCADE"), nullable=False)
     institution = Column(String(200), nullable=False)
     degree = Column(String(100), nullable=False)
@@ -54,7 +55,7 @@ class Education(Base):
 class Experience(Base):
     __tablename__ = "experience"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True,index=True)
     candidate_id = Column(Integer, ForeignKey("candidate_profiles.id", ondelete="CASCADE"), nullable=False)
 
     company_name = Column(String(200), nullable=False)
@@ -76,7 +77,7 @@ class Experience(Base):
 class Companies(Base):
     __tablename__ = "companies"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True,index=True)
     name = Column(String(200), nullable=False)
     description = Column(Text, nullable=True)
     website = Column(String(500), nullable=True)
@@ -96,7 +97,7 @@ class CompanyMembers(Base):
         UniqueConstraint("user_id", "company_id", name="uq_user_company"),
     ) # to prevent same user and same company duplicate value
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     company_id = Column(Integer, ForeignKey("companies.id", ondelete="CASCADE"), nullable=False)
     role = Column(String(20), default="recruiter", nullable=False)
@@ -106,7 +107,7 @@ class CompanyMembers(Base):
 class Jobs(Base):
     __tablename__ = "jobs"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True,index=True)
 
     company_id = Column(Integer, ForeignKey("companies.id", ondelete="CASCADE"), nullable=False)
     posted_by = Column(Integer, ForeignKey("company_members.id", ondelete="SET NULL"), nullable=True)
@@ -143,14 +144,14 @@ class Jobs(Base):
 class Skills(Base):
     __tablename__ = "skills"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100), unique=True, nullable=False)
 
 
 class CandidateSkills(Base):
     __tablename__ = "candidate_skills"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True,index=True)
     candidate_id = Column(Integer, ForeignKey("candidate_profiles.id", ondelete="CASCADE"), nullable=False)
     skill_id = Column(Integer, ForeignKey("skills.id", ondelete="CASCADE"), nullable=False)
     years_of_experience = Column(Integer, default=0, nullable=False)
@@ -163,7 +164,7 @@ class CandidateSkills(Base):
 class JobSkills(Base):
     __tablename__ = "job_skills"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True,index=True)
     job_id = Column(Integer, ForeignKey("jobs.id", ondelete="CASCADE"), nullable=False)
     skill_id = Column(Integer, ForeignKey("skills.id", ondelete="CASCADE"), nullable=False)
     is_required = Column(Boolean, default=True, nullable=False)
@@ -175,7 +176,7 @@ class JobSkills(Base):
 
 class Applications(Base):
     __tablename__ = 'applications'
-    id = Column(Integer, primary_key=True) 
+    id = Column(Integer, primary_key=True, index=True) 
     job_id = Column(Integer, ForeignKey('jobs.id'))
     candidate_id = Column(Integer, ForeignKey('candidate_profiles.id'))
     resume_url = Column(String)
@@ -187,3 +188,9 @@ class Applications(Base):
     __table_args__ = (
         UniqueConstraint("job_id",'candidate_id', name="uq_job_candidate")
     )
+
+class SaveJobs(Base):
+    __tablename__ = 'save_job'
+    id = Column(Integer, primary_key=True,index=True)
+    job_id = Column(Integer,ForeignKey('jobs.id'))
+    candidate_id = Column(Integer, ForeignKey('candidate_profiles.id'))
