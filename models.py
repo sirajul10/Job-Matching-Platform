@@ -89,6 +89,7 @@ class Companies(Base):
     industry = Column(String(150), nullable=True)
     size = Column(Integer, nullable=True)  # Number of employees
     location = Column(String(200), nullable=True)
+    created_by = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), nullable=True)
