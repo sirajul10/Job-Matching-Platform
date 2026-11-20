@@ -1,8 +1,9 @@
-import os
+# import os
 from datetime import datetime, timedelta, timezone
 from typing import Annotated
+from fastapi.responses import JSONResponse
 
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
@@ -11,12 +12,12 @@ from sqlalchemy.orm import Session
 
 from database import SessionLocal
 from models import Users
-from Pydantic.create_user import CreateUsers
+from Pydantic.create_user import CreateUsers,PasswodChange,forgotPassPydantic
 # from router.Emailverify import sendEmail
 # from Verify.otp import generateOtp
 # from Verify.verify_access_token import generate_token
 
-load_dotenv()
+# load_dotenv()
 
 router = APIRouter()
 
@@ -57,7 +58,7 @@ def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
     except JWTError:
         raise HTTPException(status_code=401, detail="Could not validate credentials")
 
-
+db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[dict, Depends(get_current_user)]
 
 
@@ -100,9 +101,8 @@ def create_user(db: db_dependency, newuser: CreateUsers):
 
     db.commit()
 
- 
-db_dependency = Annotated[Session, Depends(get_db)]
-user_dependency = Annotated[dict,Depends(get_current_user)]
+
+
 
 @router.post("/login")
 def user_login(
@@ -122,3 +122,37 @@ def user_login(
         "access_token": token,
         "token_type": "bearer",
     }
+
+
+@router.put("/change-password")
+def change_password(db:db_dependency, user:user_dependency,newpass:PasswodChange):
+    autUser = authenticate_user(user.get("username"),newpass.old_password,db)
+    dbuser = db.query(Users).filter(Users.username == user.get("username")).first()
+
+    if dbuser is None:
+        raise HTTPException(status_code=401,detail="you are not authenticate")
+    
+    if autUser is None:
+        raise HTTPException(status_code=401,detail="Your old password is wrong")
+
+    if newpass.newpassword != newpass.confirm_password:
+        raise HTTPException(status_code=401, detail="Password does not match")
+    dbuser.password_hash =bcrypt_context.hash(newpass.newpassword)
+    db.commit()
+
+    return JSONResponse(status_code=201,content={'message':"Password has changed"})
+
+
+@router.put("/forgot-password")
+def forgot_password(db:db_dependency,requiredata:forgotPassPydantic):
+    user = db.query(Users).filter(Users.username == requiredata.username).first()
+    if user is None:
+        raise HTTPException(status_code=401,detail="User Not Found")
+
+    if requiredata.newpassword != requiredata.confirm_password:
+        raise HTTPException(status_code=301,detail="Password does not match")
+
+    user.password_hash = bcrypt_context.hash(requiredata.newpassword)
+    db.commit()
+    return JSONResponse(status_code=201,content={'message':'password set successfull'})
+
