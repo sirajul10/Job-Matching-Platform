@@ -183,6 +183,24 @@ class JobSkills(Base):
     is_required = Column(Boolean, default=True, nullable=False)
 
 
+class SkillCategories(Base):
+    __tablename__ = "skill_categories"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), unique=True, nullable=False)
+
+
+class SkillCategoryLinks(Base):
+    __tablename__ = "skill_category_links"
+    __table_args__ = (
+        UniqueConstraint("skill_id", "category_id", name="uq_skill_category"),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    skill_id = Column(Integer, ForeignKey("skills.id", ondelete="CASCADE"), nullable=False, index=True)
+    category_id = Column(Integer, ForeignKey("skill_categories.id", ondelete="CASCADE"), nullable=False, index=True)
+
+
 # ---------------------------------------------------------------------------
 # Applications & saved jobs
 # ---------------------------------------------------------------------------
