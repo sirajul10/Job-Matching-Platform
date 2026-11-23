@@ -1,7 +1,7 @@
 from database import Base, SessionLocal, engine
 import models
 from fastapi import FastAPI, Depends, HTTPException
-from router import auth, candidate, company, experience, skill, candidate_skills, job_skills
+from router import auth, candidate, company, experience, skill, candidate_skills, job_skills, education
 
 
 models.Base.metadata.create_all(bind=engine)
@@ -14,4 +14,4 @@ app.include_router(experience.router)
 app.include_router(skill.router)
 app.include_router(candidate_skills.router)
 app.include_router(job_skills.router)
-
+app.include_router(education.router)

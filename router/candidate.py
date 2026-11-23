@@ -34,7 +34,7 @@ def create_user_profile(db:db_dependency,user:user_dependency,prodata:candidatep
         location=prodata.location,
         headline=prodata.headline,
         bio=prodata.bio,
-        resume_url=prodata.resume_url,
+        resume_url=str(prodata.resume_url) if prodata.resume_url else None,
         expected_salary = prodata.expected_salary,
         open_to_work = prodata.open_to_work
 
