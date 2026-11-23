@@ -100,6 +100,8 @@ def create_user(db: db_dependency, newuser: CreateUsers):
     db.add(user_model)
 
     db.commit()
+    db.refresh()
+    return JSONResponse(status_code=201,content={'messgae':f'{newuser.username} reger successfull'})
 
 
 
