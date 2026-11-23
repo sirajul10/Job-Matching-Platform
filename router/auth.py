@@ -119,8 +119,9 @@ def user_login(
 
     token = create_access_token(user.username, user.id, user.role, timedelta(days=1))
     return {
-        "access_token": token,
-        "token_type": "bearer",
+    "access_token": token,
+    "token_type": "bearer",
+    "user_id": user.id
     }
 
 
