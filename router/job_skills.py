@@ -5,7 +5,8 @@ from sqlalchemy.orm import Session
 
 from router.auth import get_db, get_current_user
 from router.skill import get_or_create_skill
-from models import Jobs, JobSkills, Skills, CompanyMembers
+from router.job import require_company_access
+from models import Jobs, JobSkills, Skills
 from Pydantic.skillPydantic import JobSkillCreate, JobSkillUpdate, JobSkillOut
 
 router = APIRouter(prefix="/jobs/{job_id}/skills", tags=["Job Skills"])
@@ -22,13 +23,8 @@ def get_job_or_404(db: Session, job_id: int) -> Jobs:
 
 
 def require_company_member(db: Session, user: dict, job: Jobs):
-    member = (
-        db.query(CompanyMembers)
-        .filter(CompanyMembers.user_id == user.get("id"), CompanyMembers.company_id == job.company_id)
-        .first()
-    )
-    if not member:
-        raise HTTPException(status_code=403, detail="Only members of this job's company can change its skills")
+    # members, the company's creator and platform admins may change a job's skills
+    require_company_access(db, user, job.company_id)
 
 
 def to_out(row: JobSkills, skill: Skills) -> dict:
