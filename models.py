@@ -214,3 +214,92 @@ class SavedJobs(Base):
     job_id = Column(Integer, ForeignKey("jobs.id", ondelete="CASCADE"), nullable=False, index=True)
     candidate_id = Column(Integer, ForeignKey("candidate_profiles.id", ondelete="CASCADE"), nullable=False, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
+class ApplicationStatusHistory(Base):
+    __tablename__ = "application_status_history"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    application_id = Column(
+        Integer,
+        ForeignKey("applications.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True
+    )
+
+    changed_by = Column(
+        Integer,
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True
+    )
+
+    old_status = Column(String(20), nullable=True)
+    new_status = Column(String(20), nullable=False)
+
+    note = Column(Text, nullable=True)
+
+    created_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False
+    )
+
+
+class ApplicationComments(Base):
+    __tablename__ = "application_comments"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    application_id = Column(
+        Integer,
+        ForeignKey("applications.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True
+    )
+
+    user_id = Column(
+        Integer,
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True
+    )
+
+    comment = Column(Text, nullable=False)
+
+    created_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False
+    )
+
+
+
+class ApplicationDocuments(Base):
+    __tablename__ = "application_documents"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    application_id = Column(
+        Integer,
+        ForeignKey("applications.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True
+    )
+
+    uploaded_by = Column(
+        Integer,
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True
+    )
+
+    document_name = Column(String(255), nullable=False)
+
+    document_url = Column(String(1000), nullable=False)
+
+    document_type = Column(String(100), nullable=True)
+
+    uploaded_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False
+    )
