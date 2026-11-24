@@ -11,6 +11,7 @@ router = APIRouter()
 db_dependency = Annotated[Session,Depends(get_db)]
 user_dependency = Annotated[dict,Depends(get_current_user)]
 @router.post("/create-user-profile/{user_id}")
+
 def create_user_profile(db:db_dependency,user:user_dependency,prodata:candidatepydantic,user_id:int):
 
     # 1. Check whether the user exists in the Users table
@@ -34,7 +35,7 @@ def create_user_profile(db:db_dependency,user:user_dependency,prodata:candidatep
         location=prodata.location,
         headline=prodata.headline,
         bio=prodata.bio,
-        resume_url=prodata.resume_url,
+        resume_url=str(prodata.resume_url) if prodata.resume_url else None,
         expected_salary = prodata.expected_salary,
         open_to_work = prodata.open_to_work
 

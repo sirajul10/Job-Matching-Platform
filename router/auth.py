@@ -100,6 +100,8 @@ def create_user(db: db_dependency, newuser: CreateUsers):
     db.add(user_model)
 
     db.commit()
+    db.refresh()
+    return JSONResponse(status_code=201,content={'messgae':f'{newuser.username} reger successfull'})
 
 
 
@@ -119,8 +121,9 @@ def user_login(
 
     token = create_access_token(user.username, user.id, user.role, timedelta(days=1))
     return {
-        "access_token": token,
-        "token_type": "bearer",
+    "access_token": token,
+    "token_type": "bearer",
+    "user_id": user.id
     }
 
 
