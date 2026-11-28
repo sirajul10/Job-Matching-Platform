@@ -232,3 +232,41 @@ class SavedJobs(Base):
     job_id = Column(Integer, ForeignKey("jobs.id", ondelete="CASCADE"), nullable=False, index=True)
     candidate_id = Column(Integer, ForeignKey("candidate_profiles.id", ondelete="CASCADE"), nullable=False, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
+# ---------------------------------------------------------------------------
+# Job Alerts
+# ---------------------------------------------------------------------------
+
+
+class JobAlerts(Base):
+    __tablename__ = "job_alerts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    candidate_id = Column(Integer, ForeignKey("candidate_profiles.id", ondelete="CASCADE"), nullable=False, index=True)
+
+    name = Column(String(100), nullable=True)  # label such as "Remote Python jobs"
+
+    # search preferences: every filled-in field must match a job
+    keyword = Column(String(100), nullable=True)
+    location = Column(String(200), nullable=True)
+    is_remote = Column(Boolean, nullable=True)
+    job_type = Column(String(30), nullable=True)
+    experience_level = Column(String(30), nullable=True)
+    min_salary = Column(Numeric(12, 2), nullable=True)
+    currency = Column(String(3), nullable=True)
+
+    is_active = Column(Boolean, default=True, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now(), nullable=True)
+
+
+class JobAlertSkills(Base):
+    __tablename__ = "job_alert_skills"
+    __table_args__ = (
+        UniqueConstraint("alert_id", "skill_id", name="uq_alert_skill"),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    alert_id = Column(Integer, ForeignKey("job_alerts.id", ondelete="CASCADE"), nullable=False, index=True)
+    skill_id = Column(Integer, ForeignKey("skills.id", ondelete="CASCADE"), nullable=False, index=True)
